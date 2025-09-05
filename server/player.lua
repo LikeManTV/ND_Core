@@ -403,9 +403,9 @@ local function createCharacterTable(info)
     ---@param name string
     ---@param rank number
     ---@return boolean
-    function self.setJob(name, rank)
+    function self.setJob(name, rank, customGroup)
         self.removeGroup(self.job)
-        local job = self.addGroup(name, rank, nil, true)
+        local job = self.addGroup(name, rank, customGroup, true)
         if job then
             self.job = job.name
             self.jobInfo = job
