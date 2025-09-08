@@ -1,3 +1,7 @@
+RegisterNetEvent("ND:notifyClient", function(...)
+    NDCore.notify(...)
+end)
+
 -- updates the money on the client.
 RegisterNetEvent("ND:updateMoney", function(cash, bank)
     if not NDCore.player then return end

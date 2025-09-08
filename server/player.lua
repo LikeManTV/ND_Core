@@ -434,6 +434,35 @@ local function createCharacterTable(info)
     return self
 end
 
+function NDCore.avoidSavingLocation(coords, dist)
+    avoidSavingLastLocations[#avoidSavingLastLocations+1] = { coords = coords, dist = dist}
+end
+
+function NDCore.validateCharacterData(charInfo)
+    local errors = {}
+
+    local function checkLength(field, value, maxLength)
+        if type(value) ~= "string" then return end
+        if #value > maxLength then
+            table.insert(errors, string.format("%s is too long (max %d, got %d)", field, maxLength, #value))
+        end
+    end
+
+    if charInfo.name then checkLength("game name", charInfo.name, 50) end
+    if charInfo.firstname then checkLength("firstname", charInfo.firstname, 50) end
+    if charInfo.lastname then checkLength("lastname", charInfo.lastname, 50) end
+    if charInfo.dob then checkLength("dob", charInfo.dob, 50) end
+    if charInfo.gender then checkLength("gender", charInfo.gender, 50) end
+    if type(charInfo.cash) ~= "number" then table.insert(errors, "cash must be a number") end
+    if type(charInfo.bank) ~= "number" then table.insert(errors, "bank must be a number") end
+
+    if #errors > 0 then
+        return false, errors
+    else
+        return true, {}
+    end
+end
+
 ---@param src number
 ---@param info table
 ---@return table
@@ -456,6 +485,18 @@ function NDCore.newCharacter(src, info)
         metadata = info.metadata or {},
         inventory = info.inventory or {}
     }
+
+    local valid, issues = NDCore.validateCharacterData(charInfo)
+    if not valid then
+        for _, err in ipairs(issues) do
+            Wait(100)
+            TriggerClientEvent("ND:notifyClient", src, {
+                description = err,
+                type = "error"
+            })
+        end
+        return
+    end
 
     charInfo.id = MySQL.insert.await("INSERT INTO nd_characters (identifier, name, firstname, lastname, dob, gender, cash, bank, phonenumber, `groups`, metadata, inventory) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", {
         identifier,
