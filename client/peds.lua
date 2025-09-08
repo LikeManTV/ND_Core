@@ -112,7 +112,7 @@ local function disableCollisionWithModels(ped, models)
     end
 end
 
-function NDCore.createAiPed(info)
+function NDCore.createAiPed(info, cb)
     local ped
     local model = type(info.model) == "string" and GetHashKey(info.model) or info.model
     local blipInfo = info.blip
@@ -146,6 +146,10 @@ function NDCore.createAiPed(info)
         local time = GetCloudTimeAsInt()
         while not DoesEntityExist(ped) and time-GetCloudTimeAsInt() < 5 do
             Wait(100)
+        end
+
+        if cb then
+            cb(ped)
         end
 
         disableCollisionWithModels(ped, info.disableCollisionWithModels)
