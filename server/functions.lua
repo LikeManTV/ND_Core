@@ -18,7 +18,16 @@ function NDCore.getPlayers(key, value, returnArray)
     if not key or not value then return NDCore.players end 
     
     local players = {}
-    local keyTypes = {id = "id", firstname = "firstname", lastname = "lastname", gender = "gender", groups = "groups"}
+    local keyTypes = {
+        id = "id",
+        firstname = "firstname",
+        lastname = "lastname",
+        gender = "gender",
+        groups = "groups",
+        job = "job",
+        gender = "gender"
+    }
+
     local findBy = keyTypes[key] or "metadata"
 
     if findBy then
