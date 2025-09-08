@@ -1,3 +1,5 @@
+local avoidSavingLastLocations = {}
+
 local function removeCharacterFunctions(character)
     local newData = {}
     for k, v in pairs(character) do
@@ -145,24 +147,40 @@ local function createCharacterTable(info)
     -- Unload and save character
     function self.unload()
         if not NDCore.players[self.source] then return end
+
         for name, _ in pairs(self.groups) do
             lib.removePrincipal(self.source, ("group.%s"):format(name))
         end
+
         local ped = GetPlayerPed(self.source)
         if ped then
             local coords = GetEntityCoords(ped)
             local heading = GetEntityHeading(ped)
-            self.setMetadata("location", {
-                x = coords.x,
-                y = coords.y,
-                z = coords.z,
-                w = heading
-            })
+            local saveLocation = true
+
+            for i=1, #avoidSavingLastLocations do
+                local loc = avoidSavingLastLocations[i]
+                if #(loc.coords-coords) < loc.dist then
+                    saveLocation = false
+                end
+            end
+
+            if saveLocation then                
+                self.setMetadata("location", {
+                    x = coords.x,
+                    y = coords.y,
+                    z = coords.z,
+                    w = heading
+                })
+            end
         end
+
         self.triggerEvent("ND:characterUnloaded")
         TriggerEvent("ND:characterUnloaded", self.source, self)
+
         local saved = self.save()
         NDCore.players[self.source] = nil
+
         return saved
     end
     
